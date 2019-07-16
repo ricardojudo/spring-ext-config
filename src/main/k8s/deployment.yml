@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: spring-ext-config
+  labels:
+    name: spring-ext-config
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: spring-ext-config
+    spec:
+      containers:
+      - name: spring-ext-config
+        image: ricardojudo/spring-ext-config:v1.0
+        env:
+          - name: DEMO_EXAMPLE_VALUE
+            #value: hello_k8s
+            valueFrom:
+              secretKeyRef:
+                name: demo-example-value
+                key: DEMO_EXAMPLE_VALUE
+          
+        ports:
+        - name: tomcat
+          containerPort: 8080
+        livenessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 15
+          timeoutSeconds: 1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-ext-config
+  labels:
+    name: spring-ext-config
+spec:
+  ports:
+    # the port that this service should serve on
+  - port: 8080
+    targetPort: 8080
+  selector:
+    name: spring-ext-config
